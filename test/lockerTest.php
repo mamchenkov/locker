@@ -45,6 +45,8 @@ class LockerTest extends PHPUnit_Framework_TestCase {
 		$unlock = Locker::unlock($lockFile);
 
 		$this->assertTrue($unlock);
+
+		$this->assertFalse(file_exists($lockFile));
 	}
 
 	public function test__debug() {
