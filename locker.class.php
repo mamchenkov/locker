@@ -44,38 +44,80 @@ class Locker {
 	 *
 	 * @param string $lock Path to lock file
 	 * @param boolean $debug Whether to enable debug output
-	 * @return numeric|boolean Number of bytes saved into a lock file on success, false on failure
+	 * @return integer|boolean Number of bytes saved into a lock file on success, false on failure
 	 */
 	public static function lock($lock, $debug = false) {
 		$result = false;
 
 		$proc_pid = getmypid();
 
-		if (file_exists($lock)) {
-			$file_pid = file_get_contents($lock);
-			if (empty($file_pid)) {
-				self::debug("Locking", $debug);
-				$result = file_put_contents($lock, $proc_pid);
-			}
-			elseif ($file_pid <> $proc_pid) {
-				$file_pid_proc = trim(shell_exec("ps -p $file_pid -o comm="));
-				if (!empty($file_pid_proc)) {
-					self::debug("Found old lock. Process $file_pid_proc [PID=$file_pid] is still running.", $debug);
-				}    
-				else {
-					self::debug("Found old lock.  Cleaning up.", $debug);
-					$result = file_put_contents($lock, $proc_pid);
-				}    
-			}    
-			else {
-				self::debug("Lock already in place.", $debug);
-			}    
-		}    
-		else {
-			self::debug("Locking", $debug);
-			$result = file_put_contents($lock, $proc_pid);
-		}    
+		$lockedPid = self::getLockedPid($lock, $debug);
+		$pidAlive = self::isPidAlive($lockedPid, $debug);
 
+		if (!$pidAlive) {
+			$result = self::writeLock($lock, $proc_pid, $debug);
+		}
+		return $result;
+	}
+
+	/**
+	 * Find the PID from the lock file
+	 *
+	 * @param string $lock Lock file name
+	 * @param boolean $debug Debug on/off
+	 * @return null|integer
+	 */
+	private static function getLockedPid($lock, $debug) {
+		$result = null;
+
+		if (!file_exists($lock)) {
+			self::debug("Lock file [$lock] does not exist");
+			return $result;
+		}
+
+		$file_pid = file_get_contents($lock);
+		if ($file_pid && is_numeric($file_pid)) {
+			$result = $file_pid;
+		}
+		else {
+			self::debug("Lock file [$lock] does not contain valid PID", $debug);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Check if given PID is still running
+	 *
+	 * @param integer $pid PID to check
+	 * @param boolean $debug Debug on/off
+	 * @return boolean True if alive, false otherwise
+	 */
+	private static function isPidAlive($pid, $debug) {
+		$result = false;
+
+		if ($pid && is_numeric($pid)) {
+			$pid_proc = trim(shell_exec("ps -p $pid -o comm="));
+			if (!empty($pid_proc)) {
+				self::debug("PID [$pid] is alive and running [$pid_proc]", $debug);
+				$result = true;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Write lock file
+	 *
+	 * @param string $lock Name of the lock file
+	 * @param integer $proc_pid Process ID to write to lock file
+	 * @param boolean $debug Debug on/off
+	 * @return integer Number of bytes written to lock file
+	 */
+	private static function writeLock($lock, $proc_pid, $debug) {
+		self::debug("Writing lock file [$lock] for PID [$proc_pid]", $debug);
+		$result = file_put_contents($lock, $proc_pid);
 		return $result;
 	}
 
@@ -92,10 +134,10 @@ class Locker {
 		if (file_exists($lock)) {
 			$result = unlink($lock);
 			if ($result) {
-				self::debug("Removed lock file $lock", $debug);
+				self::debug("Removed lock file [$lock]", $debug);
 			}
 			else {
-				self::debug("Failed to remove lock file $lock", $debug);
+				self::debug("Failed to remove lock file [$lock]", $debug);
 			}
 		}
 
@@ -110,7 +152,7 @@ class Locker {
 	 */
 	private static function debug($message, $debug) {
 		if ($message && $debug) {
-			print $message;
+			print "$message\n";
 		}
 	}
 }
