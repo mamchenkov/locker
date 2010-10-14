@@ -1,6 +1,6 @@
 <?php
 
-require_once dirname(__FILE__) . '/locker.php';
+require_once dirname(__FILE__) . '/locker.class.php';
 
 $lockFile = Locker::getName();
 $lock = Locker::lock($lockFile);
