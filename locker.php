@@ -29,7 +29,7 @@ class Locker {
 		}
 
 		if (empty($suffix)) {
-			$result = tempnam($dir, $prefix);
+			$result = tempnam($dir, $prefix); // tempnam() actually creates the file
 		}
 		else {
 			$result = $dir . '/' . $prefix . $suffix;
@@ -53,7 +53,11 @@ class Locker {
 
 		if (file_exists($lock)) {
 			$file_pid = file_get_contents($lock);
-			if ($file_pid <> $proc_pid) {
+			if (empty($file_pid)) {
+				self::debug("Locking", $debug);
+				$result = file_put_contents($lock, $proc_pid);
+			}
+			elseif ($file_pid <> $proc_pid) {
 				$file_pid_proc = trim(shell_exec("ps -p $file_pid -o comm="));
 				if (!empty($file_pid_proc)) {
 					self::debug("Found old lock. Process $file_pid_proc [PID=$file_pid] is still running.", $debug);
