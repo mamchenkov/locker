@@ -1,6 +1,5 @@
 <?php
-
-require_once dirname(__FILE__) . '/../locker.class.php';
+require_once dirname(__FILE__) . '/../Locker.php';
 
 class LockerTest extends PHPUnit_Framework_TestCase {
 

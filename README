@@ -1,4 +1,4 @@
-locker.class.php is a PHP class that can be used to make sure that
+Locker.php is a PHP class that can be used to make sure that
 the single instance of the PHP script is running at any given time.
 
 For example, if you have a slow cronjob (report generator, cleanup 
