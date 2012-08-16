@@ -71,7 +71,7 @@ class Locker {
 		$result = null;
 
 		if (!file_exists($lock)) {
-			self::debug("Lock file [$lock] does not exist");
+			self::debug("Lock file [$lock] does not exist", $debug);
 			return $result;
 		}
 
