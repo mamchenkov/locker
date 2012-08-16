@@ -1,5 +1,5 @@
 <?php
-require_once dirname(__FILE__) . '/../Locker.php';
+require_once dirname(__FILE__) . DIRECTORY_SEPARATOR  . 'Locker.php';
 
 class LockerTest extends PHPUnit_Framework_TestCase {
 
