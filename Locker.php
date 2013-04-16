@@ -24,7 +24,7 @@ class Locker {
 	public static function getName($suffix = null, $prefix = self::DEFAULT_PREFIX, $dir = null) {
 		$result = '';
 		
-		if (empty($dir) || !is_dir(dir)) {
+		if (empty($dir) || !is_dir($dir)) {
 			$dir = sys_get_temp_dir();
 		}
 
